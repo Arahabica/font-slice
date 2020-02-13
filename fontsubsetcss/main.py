@@ -18,7 +18,7 @@ FONT_FACE_TEMPLATE = """
 
 
 def get_120_unicode_ranges():
-    with open(os.path.join(os.path.dirname(__file__), 'unicode_ranges_120.txt')) as f:
+    with open(os.path.join(os.path.dirname(__file__), "unicode_ranges_120.txt")) as f:
         lines = f.readlines()
     return [str.strip(line) for line in lines]
 
@@ -28,7 +28,7 @@ def get_unicode_ranges_from_text(text):
     char_num_list = [ord(char) for char in chars]
     char_num_list = list(set(char_num_list))
     char_num_list.sort()
-    main_unicode_range = ','.join(['U+%x' % num for num in char_num_list])
+    main_unicode_range = ",".join(["U+%x" % num for num in char_num_list])
 
     another_list = []
     cursor = 1
@@ -39,10 +39,10 @@ def get_unicode_ranges_from_text(text):
     another_ranges = []
     for (f, t) in another_list:
         if f == t:
-            another_ranges.append('U+%x' % f)
+            another_ranges.append("U+%x" % f)
         else:
-            another_ranges.append('U+%x-%x' % (f, t))
-    another_unicode_range = ','.join(another_ranges)
+            another_ranges.append("U+%x-%x" % (f, t))
+    another_unicode_range = ",".join(another_ranges)
     return [main_unicode_range, another_unicode_range]
 
 
@@ -57,10 +57,7 @@ def generate_subset(unicode_range, flavor, index, font_file, output_dir):
     --name-IDs='*' \
     --output-file=style/font-subsets/YOUR_FONT-subset-1.woff
     """
-    args = [
-        "--layout-features='*'",
-        "--flavor=%s" % flavor
-    ]
+    args = ["--layout-features='*'", "--flavor=%s" % flavor]
     options = Options()
     options.parse_opts(args)
     subsetter = Subsetter(options)
@@ -71,24 +68,26 @@ def generate_subset(unicode_range, flavor, index, font_file, output_dir):
 
     font_path = Path(font_file)
     name = font_path.stem
-    outfile = '%s/%s/%s-subset-%d.%s' % (output_dir, FONT_DIR, name, index, flavor)
+    outfile = "%s/%s/%s-subset-%d.%s" % (output_dir, FONT_DIR, name, index, flavor)
     save_font(font, outfile, options)
     font.close()
 
 
 def generate_font_css(unicode_ranges, name, output_dir):
-    css_text = ''
+    css_text = ""
     for i, unicode_range in enumerate(unicode_ranges):
-        base_path = '%s/%s-subset-%d' % (FONT_DIR, name, i)
-        css_text += FONT_FACE_TEMPLATE % (name, base_path, base_path, unicode_range) + "\n"
+        base_path = "%s/%s-subset-%d" % (FONT_DIR, name, i)
+        css_text += (
+            FONT_FACE_TEMPLATE % (name, base_path, base_path, unicode_range) + "\n"
+        )
 
-    with open('./%s/%s.css' % (output_dir, name), 'w') as f:
+    with open("./%s/%s.css" % (output_dir, name), "w") as f:
         f.write(css_text)
 
 
 def _main(font, output_dir, text, text_files):
     if text is None:
-        text = ''
+        text = ""
     if text_files is None:
         text_files = []
     for text_file in text_files:
@@ -97,16 +96,16 @@ def _main(font, output_dir, text, text_files):
 
     font_path = Path(font)
     if not font_path.exists():
-        raise '%s is not found.' % font
+        raise "%s is not found." % font
     name = font_path.stem
-    os.makedirs('%s/%s' % (output_dir, FONT_DIR), exist_ok=True)
+    os.makedirs("%s/%s" % (output_dir, FONT_DIR), exist_ok=True)
     if text:
         unicode_ranges = get_unicode_ranges_from_text(text)
     else:
         unicode_ranges = get_120_unicode_ranges()
     for i, unicode_range in enumerate(unicode_ranges):
-        generate_subset(unicode_range, 'woff', i, font, output_dir)
-        generate_subset(unicode_range, 'woff2', i, font, output_dir)
+        generate_subset(unicode_range, "woff", i, font, output_dir)
+        generate_subset(unicode_range, "woff2", i, font, output_dir)
     generate_font_css(unicode_ranges, name, output_dir)
 
 
@@ -116,29 +115,28 @@ def main():
 fontsubsetcss -- OpenType font subsetter and css generator
 
 fontsubsetcss is an OpenType font subsetter and css generator, based on fontTools
-    """)
+    """
+    )
 
+    parser.add_argument("font", help="The input font file.")
     parser.add_argument(
-        'font',
-        help='The input font file.'
+        "-o",
+        "--output-dir",
+        default=".",
+        metavar="<path>",
+        help="The output directory. If not specified, the subsetted fonts and stylesheet will be saved in current directory.",
     )
     parser.add_argument(
-        '-o', '--output-dir',
-        default='.',
-        metavar='<path>',
-        help="The output directory. If not specified, the subsetted fonts and stylesheet will be saved in current directory."
+        "--text",
+        default="",
+        metavar="<text>",
+        help="Specify characters to include in the subset, as UTF-8 string.",
     )
     parser.add_argument(
-        '--text',
-        default='',
-        metavar='<text>',
-        help='Specify characters to include in the subset, as UTF-8 string.'
-    )
-    parser.add_argument(
-        '--text-file',
-        nargs='*',
-        metavar='<path>',
-        help='Like --text but reads from a file. Newline character are not added to the subset.'
+        "--text-file",
+        nargs="*",
+        metavar="<path>",
+        help="Like --text but reads from a file. Newline character are not added to the subset.",
     )
 
     args = parser.parse_args()
