@@ -10,14 +10,14 @@ with open("README.rst", "r") as f:
     long_description = f.read()
 
 setup(
-    name="font-subset",
+    name="font-subset-css",
     version="0.0.1",
     description="font subset and css generator",
     long_description=long_description,
     long_description_content_type="text/x-rst",
     author="Sasage Ryuji",
     author_email="r.sasage@gmail.com",
-    url="https://github.com/Arahabica",
+    url="https://github.com/Arahabica/font-subset-css",
     license="MIT",
     packages=find_packages(exclude=("tests")),
     install_requires=_requirements(),
@@ -31,7 +31,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fontsubset = fontsubset.main:main',
+            'fontsubsetcss = fontsubsetcss.main:main',
         ],
     },
     include_package_data=True

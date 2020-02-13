@@ -11,7 +11,7 @@ FONT_FACE_TEMPLATE = """
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("%s/%s-subset-%d.woff") format('woff');
+  src: url("%s.woff2") format('woff2'), url("%s.woff") format('woff');
   unicode-range: %s;
 }
 """
@@ -46,7 +46,7 @@ def get_unicode_ranges_from_text(text):
     return [main_unicode_range, another_unicode_range]
 
 
-def generate_subset(unicode_range, index, font_file, output_dir):
+def generate_subset(unicode_range, flavor, index, font_file, output_dir):
     """
     Generate font subset.
     You can do the same with the following command.
@@ -59,7 +59,7 @@ def generate_subset(unicode_range, index, font_file, output_dir):
     """
     args = [
         "--layout-features='*'",
-        "--flavor=woff"
+        "--flavor=%s" % flavor
     ]
     options = Options()
     options.parse_opts(args)
@@ -71,7 +71,7 @@ def generate_subset(unicode_range, index, font_file, output_dir):
 
     font_path = Path(font_file)
     name = font_path.stem
-    outfile = '%s/%s/%s-subset-%d.woff' % (output_dir, FONT_DIR, name, index)
+    outfile = '%s/%s/%s-subset-%d.%s' % (output_dir, FONT_DIR, name, index, flavor)
     save_font(font, outfile, options)
     font.close()
 
@@ -79,7 +79,8 @@ def generate_subset(unicode_range, index, font_file, output_dir):
 def generate_font_css(unicode_ranges, name, output_dir):
     css_text = ''
     for i, unicode_range in enumerate(unicode_ranges):
-        css_text += FONT_FACE_TEMPLATE % (name, FONT_DIR, name, i, unicode_range) + "\n"
+        base_path = '%s/%s-subset-%d' % (FONT_DIR, name, i)
+        css_text += FONT_FACE_TEMPLATE % (name, base_path, base_path, unicode_range) + "\n"
 
     with open('./%s/%s.css' % (output_dir, name), 'w') as f:
         f.write(css_text)
@@ -104,24 +105,21 @@ def _main(font, output_dir, text, text_files):
     else:
         unicode_ranges = get_120_unicode_ranges()
     for i, unicode_range in enumerate(unicode_ranges):
-        generate_subset(unicode_range, i, font, output_dir)
+        generate_subset(unicode_range, 'woff', i, font, output_dir)
+        generate_subset(unicode_range, 'woff2', i, font, output_dir)
     generate_font_css(unicode_ranges, name, output_dir)
 
 
 def main():
     parser = ArgumentParser(
         description="""
-pyftsubset -- OpenType font subsetter and optimizer
+fontsubsetcss -- OpenType font subsetter and css generator
 
-pyftsubset is an OpenType font subsetter and optimizer, based on fontTools.
-It accepts any TT- or CFF-flavored OpenType (.otf or .ttf) or WOFF (.woff)
-font file. The subsetted glyph set is based on the specified glyphs
-or characters, and specified OpenType layout features.
+fontsubsetcss is an OpenType font subsetter and css generator, based on fontTools
     """)
 
     parser.add_argument(
         'font',
-        metavar='<path>',
         help='The input font file.'
     )
     parser.add_argument(
