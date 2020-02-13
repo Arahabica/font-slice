@@ -1,4 +1,4 @@
-from fontsubsetcss import get_120_unicode_ranges
+from fontslice import get_120_unicode_ranges
 
 
 def test_get_120_unicode_ranges():

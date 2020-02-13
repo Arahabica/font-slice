@@ -1,5 +1,7 @@
-font-subset-css
+font-slice
 =================================
+
+font-slice is a tool for splitting font. font-slice generate 120 font subsets and a css file.
 
 Requirements
 ------------
@@ -11,14 +13,22 @@ Installation
 
 .. code:: sh
 
-    $ pip install font-subset-css
+    pip install font-slice
 
 Usage
 ------------
 
 .. code:: sh
 
-    $ fontsubsetcss YOUR_FONT.otf
-    $ fontsubsetcss YOUR_FONT.otf  --output-dir style
-    $ fontsubsetcss YOUR_FONT.otf  --text-file YOUR_TEXT.txt
-    $ fontsubsetcss YOUR_FONT.otf  --text 'ABCD'
+    fontsubsetcss /path/to/font.otf
+    fontsubsetcss /path/to/font.otf  --output-dir style
+    fontsubsetcss /path/to/font.otf  --text-file /path/to/text.txt
+    fontsubsetcss /path/to/font.otf  --text 'ABCD'
+
+Test
+------------
+
+.. code:: sh
+
+    pip install tox
+    tox

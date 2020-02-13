@@ -10,7 +10,7 @@ with open("README.rst", "r") as f:
     long_description = f.read()
 
 setup(
-    name="font-subset-css",
+    name="font-slice",
     version="0.0.1",
     description="font subset and css generator",
     long_description=long_description,
@@ -31,7 +31,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'fontsubsetcss = fontsubsetcss.main:main',
+            'fontslice = fontslice.main:main',
         ],
     },
     include_package_data=True

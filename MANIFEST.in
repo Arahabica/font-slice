@@ -1,4 +1,4 @@
 include LICENSE.txt
 include README.rst
 include requirements.txt
-include fontsubsetcss/unicode_ranges_120.txt
+include fontslice/unicode_ranges_120.txt
