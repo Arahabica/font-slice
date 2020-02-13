@@ -125,10 +125,10 @@ or characters, and specified OpenType layout features.
         help='The input font file.'
     )
     parser.add_argument(
-        '-o', '--output-file',
-        default='style',
+        '-o', '--output-dir',
+        default='.',
         metavar='<path>',
-        help="The output directory. If not specified, the subsetted fonts and stylesheet will be saved in ./style/ directory."
+        help="The output directory. If not specified, the subsetted fonts and stylesheet will be saved in current directory."
     )
     parser.add_argument(
         '--text',
@@ -144,4 +144,4 @@ or characters, and specified OpenType layout features.
     )
 
     args = parser.parse_args()
-    _main(args.font, args.output_file, args.text, args.text_file)
+    _main(args.font, args.output_dir, args.text, args.text_file)
