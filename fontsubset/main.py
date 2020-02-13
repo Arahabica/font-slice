@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+from argparse import ArgumentParser
 from fontTools.subset import Subsetter, Options, parse_unicodes, load_font, save_font
 
 FONT_DIR = "font-subsets"
@@ -16,14 +18,12 @@ FONT_FACE_TEMPLATE = """
 
 
 def get_120_unicode_ranges():
-    with open('./unicode_ranges_120.txt') as f:
+    with open(os.path.join(os.path.dirname(__file__), 'unicode_ranges_120.txt')) as f:
         lines = f.readlines()
     return [str.strip(line) for line in lines]
 
 
-def get_unicode_ranges_from_text(subset_file):
-    with open(subset_file) as f:
-        text = f.read()
+def get_unicode_ranges_from_text(text):
     chars = list(text)
     char_num_list = [ord(char) for char in chars]
     char_num_list = list(set(char_num_list))
@@ -46,7 +46,7 @@ def get_unicode_ranges_from_text(subset_file):
     return [main_unicode_range, another_unicode_range]
 
 
-def generate_subset(unicode_range, index, name, output_dir):
+def generate_subset(unicode_range, index, font_file, output_dir):
     """
     Generate font subset.
     You can do the same with the following command.
@@ -64,11 +64,13 @@ def generate_subset(unicode_range, index, name, output_dir):
     options = Options()
     options.parse_opts(args)
     subsetter = Subsetter(options)
-    font = load_font('%s.otf' % name, options)
+    font = load_font(font_file, options)
 
     subsetter.populate(unicodes=parse_unicodes(unicode_range))
     subsetter.subset(font)
 
+    font_path = Path(font_file)
+    name = font_path.stem
     outfile = '%s/%s/%s-subset-%d.woff' % (output_dir, FONT_DIR, name, index)
     save_font(font, outfile, options)
     font.close()
@@ -83,14 +85,63 @@ def generate_font_css(unicode_ranges, name, output_dir):
         f.write(css_text)
 
 
-def main(name, output_dir, text_file):
+def _main(font, output_dir, text, text_files):
+    if text is None:
+        text = ''
+    if text_files is None:
+        text_files = []
+    for text_file in text_files:
+        with open(text_file) as f:
+            text += f.read()
+
+    font_path = Path(font)
+    if not font_path.exists():
+        raise '%s is not found.' % font
+    name = font_path.stem
     os.makedirs('%s/%s' % (output_dir, FONT_DIR), exist_ok=True)
-    # unicode_ranges = get_120_unicode_ranges()
-    unicode_ranges = get_unicode_ranges_from_text(text_file)
+    if text:
+        unicode_ranges = get_unicode_ranges_from_text(text)
+    else:
+        unicode_ranges = get_120_unicode_ranges()
     for i, unicode_range in enumerate(unicode_ranges):
-        generate_subset(unicode_range, i, name, output_dir)
+        generate_subset(unicode_range, i, font, output_dir)
     generate_font_css(unicode_ranges, name, output_dir)
 
 
-if __name__=='__main__':
-    main(name="RiiT_F", output_dir="style", text_file='./subset.txt')
+def main():
+    parser = ArgumentParser(
+        description="""
+pyftsubset -- OpenType font subsetter and optimizer
+
+pyftsubset is an OpenType font subsetter and optimizer, based on fontTools.
+It accepts any TT- or CFF-flavored OpenType (.otf or .ttf) or WOFF (.woff)
+font file. The subsetted glyph set is based on the specified glyphs
+or characters, and specified OpenType layout features.
+    """)
+
+    parser.add_argument(
+        'font',
+        metavar='<path>',
+        help='The input font file.'
+    )
+    parser.add_argument(
+        '-o', '--output-file',
+        default='style',
+        metavar='<path>',
+        help="The output directory. If not specified, the subsetted fonts and stylesheet will be saved in ./style/ directory."
+    )
+    parser.add_argument(
+        '--text',
+        default='',
+        metavar='<text>',
+        help='Specify characters to include in the subset, as UTF-8 string.'
+    )
+    parser.add_argument(
+        '--text-file',
+        nargs='*',
+        metavar='<path>',
+        help='Like --text but reads from a file. Newline character are not added to the subset.'
+    )
+
+    args = parser.parse_args()
+    _main(args.font, args.output_file, args.text, args.text_file)
