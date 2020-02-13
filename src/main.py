@@ -1,16 +1,7 @@
 import os
-import subprocess
-
+from fontTools.subset import Subsetter, Options, parse_unicodes, load_font, save_font
 
 FONT_DIR = "font-subsets"
-
-CMD_TEMPLATE = """pyftsubset %s.otf \
---unicodes=%s \
---layout-features='*' \
---flavor=woff \
---name-IDs='*' \
---output-file=%s/%s/%s-subset-%d.woff
-"""
 
 FONT_FACE_TEMPLATE = """
 @font-face {
@@ -56,8 +47,31 @@ def get_unicode_ranges_from_text(subset_file):
 
 
 def generate_subset(unicode_range, index, name, output_dir):
-    cmd = CMD_TEMPLATE % (name, unicode_range, output_dir, FONT_DIR, name, index)
-    subprocess.call(cmd.split())
+    """
+    Generate font subset.
+    You can do the same with the following command.
+    $ pyftsubset YOUR_FONT.otf \
+    --unicodes=U+943a-943b \
+    --layout-features='*' \
+    --flavor=woff \
+    --name-IDs='*' \
+    --output-file=style/font-subsets/YOUR_FONT-subset-1.woff
+    """
+    args = [
+        "--layout-features='*'",
+        "--flavor=woff"
+    ]
+    options = Options()
+    options.parse_opts(args)
+    subsetter = Subsetter(options)
+    font = load_font('%s.otf' % name, options)
+
+    subsetter.populate(unicodes=parse_unicodes(unicode_range))
+    subsetter.subset(font)
+
+    outfile = '%s/%s/%s-subset-%d.woff' % (output_dir, FONT_DIR, name, index)
+    save_font(font, outfile, options)
+    font.close()
 
 
 def generate_font_css(unicode_ranges, name, output_dir):
