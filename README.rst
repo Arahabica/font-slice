@@ -1,8 +1,6 @@
 font-slice
 =================================
 
-|Build Status| |PyPI version| |Documentation Status|
-
 font-slice is a tool for splitting font. font-slice generate 120 font subsets and a css file.
 
 Requirements
