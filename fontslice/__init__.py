@@ -1,7 +1,23 @@
 import sys
-from .main import get_120_unicode_ranges, _main, main
+from .main import (
+    _chunk_list,
+    _get_unicode_range_hash,
+    convert_unicode_range,
+    get_120_unicode_ranges,
+    get_unicode_ranges_from_text,
+    _main,
+    main,
+)
 
-__all__ = ["get_120_unicode_ranges", "_main", "main"]
+__all__ = [
+    "_chunk_list",
+    "_get_unicode_range_hash",
+    "convert_unicode_range",
+    "get_120_unicode_ranges",
+    "get_unicode_ranges_from_text",
+    "_main",
+    "main",
+]
 
 
 if __name__ == "__main__":

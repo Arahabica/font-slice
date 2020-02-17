@@ -19,7 +19,7 @@ FONT_FACE_TEMPLATE = """
 ANOTHER_SLICE_COUNT = 10
 
 
-def chunk_list(li, num):
+def _chunk_list(li, num):
     return [li[i : i + num] for i in range(0, len(li), num)]
 
 
@@ -65,9 +65,10 @@ def get_unicode_ranges_from_text(text):
         if num > cursor:
             another_ranges.append((cursor, num - 1))
         cursor = num + 1
+    another_ranges.append((cursor, 0x3ffff))
 
     chunk_size = math.floor(len(another_ranges) / ANOTHER_SLICE_COUNT)
-    chunked_another_ranges = chunk_list(another_ranges, chunk_size)
+    chunked_another_ranges = _chunk_list(another_ranges, chunk_size)
 
     unicode_ranges = [main_unicode_range]
     for chunk in chunked_another_ranges:
