@@ -6,16 +6,6 @@ from argparse import ArgumentParser
 from fontTools.subset import Subsetter, Options, parse_unicodes, load_font, save_font
 
 FONT_DIR = "font-subsets"
-
-FONT_FACE_TEMPLATE = """
-@font-face {
-  font-family: '%s';
-  font-display: swap;
-  src: url("%s.woff2") format('woff2'), url("%s.woff") format('woff');
-  unicode-range: %s;
-}
-"""
-
 ANOTHER_SLICE_COUNT = 10
 
 
@@ -43,6 +33,14 @@ def convert_unicode_range(char_num_ranges):
     return ",".join(ranges)
 
 
+def generate_css(selector, declaration):
+    text = "%s {" % selector
+    for k, v in declaration.items():
+        text += "%s: %s;" % (k, v)
+    text += "}"
+    return text
+
+
 def get_unicode_ranges_from_text(text):
     chars = list(text)
     char_num_list = [ord(char) for char in chars]
@@ -65,7 +63,7 @@ def get_unicode_ranges_from_text(text):
         if num > cursor:
             another_ranges.append((cursor, num - 1))
         cursor = num + 1
-    another_ranges.append((cursor, 0x3ffff))
+    another_ranges.append((cursor, 0x3FFFF))
 
     chunk_size = math.floor(len(another_ranges) / ANOTHER_SLICE_COUNT)
     chunked_another_ranges = _chunk_list(another_ranges, chunk_size)
@@ -111,20 +109,26 @@ def generate_subset(unicode_range, flavor, font_file, output_dir):
     font.close()
 
 
-def generate_font_css(unicode_ranges, name, output_dir):
+def generate_font_css(unicode_ranges, name, output_dir, weight):
     css_text = ""
     for unicode_range in unicode_ranges:
         unicode_range_hash = _get_unicode_range_hash(unicode_range)
         base_path = "%s/%s-subset-%s" % (FONT_DIR, name, unicode_range_hash)
-        css_text += (
-            FONT_FACE_TEMPLATE % (name, base_path, base_path, unicode_range) + "\n"
-        )
-
+        declaration = {
+            "font-family": "%s" % name,
+            "font-display": "swap",
+            "src": "url(\"%s.woff2\") format('woff2'), url(\"%s.woff\") format('woff')"
+            % (base_path, base_path),
+            "unicode-range": unicode_range,
+        }
+        if weight:
+            declaration["font-weight"] = weight
+        css_text += generate_css("@font-face", declaration) + "\n"
     with open("./%s/%s.css" % (output_dir, name), "w") as f:
         f.write(css_text)
 
 
-def _main(font, output_dir, text, text_files):
+def _main(font, output_dir, weight, text, text_files):
     if text is None:
         text = ""
     if text_files is None:
@@ -145,7 +149,7 @@ def _main(font, output_dir, text, text_files):
     for i, unicode_range in enumerate(unicode_ranges):
         generate_subset(unicode_range, "woff", font, output_dir)
         generate_subset(unicode_range, "woff2", font, output_dir)
-    generate_font_css(unicode_ranges, name, output_dir)
+    generate_font_css(unicode_ranges, name, output_dir, weight)
 
 
 def main():
@@ -166,6 +170,9 @@ fontslice is an OpenType font subsetter and css generator, based on fontTools
         help="The output directory. If not specified, the subsetted fonts and stylesheet will be saved in current directory.",
     )
     parser.add_argument(
+        "--weight", metavar="<weight>", help="The weight of the font",
+    )
+    parser.add_argument(
         "--text",
         default="",
         metavar="<text>",
@@ -179,4 +186,4 @@ fontslice is an OpenType font subsetter and css generator, based on fontTools
     )
 
     args = parser.parse_args()
-    _main(args.font, args.output_dir, args.text, args.text_file)
+    _main(args.font, args.output_dir, args.weight, args.text, args.text_file)
