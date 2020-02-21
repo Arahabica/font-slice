@@ -65,7 +65,7 @@ def get_unicode_ranges_from_text(text):
         cursor = num + 1
     another_ranges.append((cursor, 0x3FFFF))
 
-    chunk_size = math.floor(len(another_ranges) / ANOTHER_SLICE_COUNT)
+    chunk_size = math.ceil(len(another_ranges) / ANOTHER_SLICE_COUNT)
     chunked_another_ranges = _chunk_list(another_ranges, chunk_size)
 
     unicode_ranges = [main_unicode_range]

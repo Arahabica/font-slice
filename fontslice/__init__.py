@@ -5,7 +5,7 @@ from .main import (
     convert_unicode_range,
     get_120_unicode_ranges,
     get_unicode_ranges_from_text,
-    _main,
+    generate_css,
     main,
 )
 
@@ -15,7 +15,7 @@ __all__ = [
     "convert_unicode_range",
     "get_120_unicode_ranges",
     "get_unicode_ranges_from_text",
-    "_main",
+    "generate_css",
     "main",
 ]
 
