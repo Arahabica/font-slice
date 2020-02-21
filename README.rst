@@ -20,10 +20,11 @@ Usage
 
 .. code:: sh
 
-    fontsubsetcss /path/to/font.otf
-    fontsubsetcss /path/to/font.otf  --output-dir style
-    fontsubsetcss /path/to/font.otf  --text-file /path/to/text.txt
-    fontsubsetcss /path/to/font.otf  --text 'ABCD'
+    fontslice /path/to/font.otf
+    fontslice /path/to/font.otf --output-dir style
+    fontslice /path/to/font.otf --text-file /path/to/text.txt
+    fontslice /path/to/font.otf --text 'ABCD'
+    fontslice /path/to/font.otf --weight bold
 
 Test
 ------------
